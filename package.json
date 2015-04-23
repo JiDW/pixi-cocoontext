@@ -1,0 +1,58 @@
+{
+  "name": "pixi-cocoontext",
+  "version": "1.0.0",
+  "description": "Plugin for PIXIjs and CocoonJS for optimized texts",
+  "author": "Celsius online",
+  "main": "./src/index.js",
+  "homepage": "https://github.com/JiDW/pixi-cocoontext",
+  "bugs": {
+    "url": "https://github.com/JiDW/pixi-cocoontext/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JiDW/pixi-cocoontext.git"
+  },
+  "keywords": [
+    "pixi",
+    "cocoonjs",
+    "text"
+  ],
+  "peerDependencies":{
+    "pixi.js": "^3.0.0"
+  },
+  "dependencies": {
+    "async": "^0.9.0",
+    "resource-loader": "^1.4.2"
+  },
+  "scripts": {
+    "test": "gulp test",
+    "build": "gulp build",
+    "docs": "./node_modules/.bin/jsdoc -c ./gulp/util/jsdoc.conf.json"
+  },
+  "devDependencies": {
+    "browserify": "^9.0.3",
+    "chai": "^2.1.1",
+    "del": "^1.1.0",
+    "gulp": "^3.8.10",
+    "gulp-cached": "^1.0.2",
+    "gulp-jshint": "^1.9.0",
+    "gulp-mocha": "^2.0.0",
+    "gulp-plumber": "^0.6.6",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^1.0.2",
+    "gulp-util": "^3.0.1",
+    "ink-docstrap": "^0.5.2",
+    "jsdoc": "^3.3.0-alpha13",
+    "jshint-summary": "^0.4.0",
+    "require-dir": "^0.1.0",
+    "run-sequence": "^1.0.2",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.0.0",
+    "watchify": "^2.2.1"
+  },
+  "browserify": {
+    "transform": [
+    ]
+  }
+}
