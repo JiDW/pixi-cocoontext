@@ -1,5 +1,5 @@
 var PIXI = require('pixi.js');
-var cocoonText = require('../CocoonTextUtil');
+var CONST = require('../CocoonTextUtil');
 
 /**
  * A CocoonText Object will create a line or multiple lines of text. To split a line you can use '\n' in your text string,
@@ -56,7 +56,7 @@ function CocoonText(text, style, resolution)
      * The resolution of the canvas.
      * @member {number}
      */
-    this.resolution = resolution || cocoonText.TEXT_RESOLUTION || PIXI.CONST.RESOLUTION;
+    this.resolution = resolution || CONST.TEXT_RESOLUTION || PIXI.RESOLUTION;
 
     /**
      * Private tracker for the current text.
@@ -105,7 +105,6 @@ function CocoonText(text, style, resolution)
 
     this.text = text;
     this.style = style;
-    this._generatedStyle = style;
 }
 
 // constructor
@@ -212,16 +211,25 @@ Object.defineProperties(CocoonText.prototype, {
             style.lineJoin = style.lineJoin || 'miter';
             style.miterLimit = style.miterLimit || 10;
 
-
-            this._generatedStyle = style;
-
             //multiply the font style by the resolution
             //TODO : warn if font size not in px unit
-            this._generatedStyle.font = style.font.replace(/[0-9]+/,Math.round(parseInt(style.font.match(/[0-9]+/)[0],10)*this.resolution));
-            this._generatedStyle.strokeThickness = Math.round(style.strokeThickness*this.resolution);
-            this._generatedStyle.wordWrapWidth = Math.round(style.wordWrapWidth*this.resolution);
-            this._generatedStyle.dropShadowDistance = Math.round(style.dropShadowDistance*this.resolution);
-            this._generatedStyle.padding = Math.round(style.padding*this.resolution);
+            this._generatedStyle = {
+                font : style.font.replace(/[0-9]+/,Math.round(parseInt(style.font.match(/[0-9]+/)[0],10)*this.resolution)),
+                fill : style.fill,
+                align : style.align,
+                stroke : style.stroke,
+                strokeThickness : Math.round(style.strokeThickness*this.resolution),
+                wordWrap : style.wordWrap,
+                wordWrapWidth : Math.round(style.wordWrapWidth*this.resolution),
+                dropShadow : style.dropShadow,
+                dropShadowColor : style.dropShadowColor,
+                dropShadowAngle : style.dropShadowAngle,
+                dropShadowDistance : Math.round(style.dropShadowDistance*this.resolution),
+                padding : Math.round(style.padding*this.resolution),
+                textBaseline : style.textBaseline,
+                lineJoin : style.lineJoin,
+                miterLimit : style.miterLimit
+            };
 
             if (this._style !== null)
             {
@@ -310,7 +318,7 @@ CocoonText.prototype.updateText = function ()
 
         // word wrap
         // preserve original text
-        var outputText = style.wordWrap ? PIXI.Text.wordWrap(this._text) : this._text;
+        var outputText = style.wordWrap ? this.wordWrap(this._text) : this._text;
 
         // split text into lines
         var lines = outputText.split(/(?:\r\n|\r|\n)/);
@@ -318,7 +326,7 @@ CocoonText.prototype.updateText = function ()
         // calculate text width
         var lineWidths = new Array(lines.length);
         var maxLineWidth = 0;
-        var fontProperties = PIXI.Text.determineFontProperties(style.font);
+        var fontProperties = this.determineFontProperties(style.font);
         for (var i = 0; i < lines.length; i++)
         {
             var lineWidth = this.context.measureText(lines[i]).width;
@@ -459,6 +467,156 @@ CocoonText.prototype.updateTexture = function ()
 
     this.dirty = false;
     this.cacheDirty = false;
+};
+
+/**
+ * Calculates the ascent, descent and fontSize of a given fontStyle
+ *
+ * @param fontStyle {object}
+ * @private
+ */
+CocoonText.prototype.determineFontProperties = function (fontStyle)
+{
+    var properties = PIXI.Text.fontPropertiesCache[fontStyle];
+
+    if (!properties)
+    {
+        properties = {};
+
+        var canvas = PIXI.Text.fontPropertiesCanvas;
+        var context = PIXI.Text.fontPropertiesContext;
+
+        context.font = fontStyle;
+
+        var width = Math.ceil(context.measureText('|MÉq').width);
+        var baseline = Math.ceil(context.measureText('M').width);
+        var height = 2 * baseline;
+
+        baseline = baseline * 1.4 | 0;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        context.fillStyle = '#f00';
+        context.fillRect(0, 0, width, height);
+
+        context.font = fontStyle;
+
+        context.textBaseline = 'alphabetic';
+        context.fillStyle = '#000';
+        context.fillText('|MÉq', 0, baseline);
+
+        var imagedata = context.getImageData(0, 0, width, height).data;
+        var pixels = imagedata.length;
+        var line = width * 4;
+
+        var i, j;
+
+        var idx = 0;
+        var stop = false;
+
+        // ascent. scan from top to bottom until we find a non red pixel
+        for (i = 0; i < baseline; i++)
+        {
+            for (j = 0; j < line; j += 4)
+            {
+                if (imagedata[idx + j] !== 255)
+                {
+                    stop = true;
+                    break;
+                }
+            }
+            if (!stop)
+            {
+                idx += line;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        properties.ascent = baseline - i;
+
+        idx = pixels - line;
+        stop = false;
+
+        // descent. scan from bottom to top until we find a non red pixel
+        for (i = height; i > baseline; i--)
+        {
+            for (j = 0; j < line; j += 4)
+            {
+                if (imagedata[idx + j] !== 255)
+                {
+                    stop = true;
+                    break;
+                }
+            }
+            if (!stop)
+            {
+                idx -= line;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        properties.descent = i - baseline;
+        properties.fontSize = properties.ascent + properties.descent;
+
+        PIXI.Text.fontPropertiesCache[fontStyle] = properties;
+    }
+
+    return properties;
+};
+
+/**
+ * Applies newlines to a string to have it optimally fit into the horizontal
+ * bounds set by the Text object's wordWrapWidth property.
+ *
+ * @param text {string}
+ * @private
+ */
+CocoonText.prototype.wordWrap = function (text)
+{
+    // Greedy wrapping algorithm that will wrap words as the line grows longer
+    // than its horizontal bounds.
+    var result = '';
+    var lines = text.split('\n');
+    var wordWrapWidth = this._generatedStyle.wordWrapWidth;
+    for (var i = 0; i < lines.length; i++)
+    {
+        var spaceLeft = wordWrapWidth;
+        var words = lines[i].split(' ');
+        for (var j = 0; j < words.length; j++)
+        {
+            var wordWidth = this.context.measureText(words[j]).width;
+            var wordWidthWithSpace = wordWidth + this.context.measureText(' ').width;
+            if (j === 0 || wordWidthWithSpace > spaceLeft)
+            {
+                // Skip printing the newline if it's the first word of the line that is
+                // greater than the word wrap width.
+                if (j > 0)
+                {
+                    result += '\n';
+                }
+                result += words[j];
+                spaceLeft = wordWrapWidth - wordWidth;
+            }
+            else
+            {
+                spaceLeft -= wordWidthWithSpace;
+                result += ' ' + words[j];
+            }
+        }
+
+        if (i < lines.length-1)
+        {
+            result += '\n';
+        }
+    }
+    return result;
 };
 
 /**
