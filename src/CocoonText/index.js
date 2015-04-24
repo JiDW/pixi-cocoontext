@@ -5,7 +5,8 @@ var CONST = require('../CocoonTextUtil');
  * A CocoonText Object will create a line or multiple lines of text. To split a line you can use '\n' in your text string,
  * or add a wordWrap property set to true and and wordWrapWidth property with a value in the style object.
  *
- * Once a CocoonText is generated, it is stored as a BaseTexture and will be used if a new Text is created with the exact same parameters.
+ * Once a CocoonText is generated, it is stored as a BaseTexture and will be used if a new Text is
+ * created with the exact same parameters.
  *
  * A CocoonText can be created directly from a string and a style object
  *
@@ -284,11 +285,6 @@ CocoonText.prototype.prepareUpdateText = function (text,style)
         this.context = this.canvas.getContext('2d');
 
         this.cacheDirty = false;
-
-        var texture = PIXI.Texture.fromCanvas(this.canvas);
-        texture.trim = new PIXI.math.Rectangle();
-        this.texture = texture;
-        this._texture = texture;
     }
     else
     {
@@ -297,13 +293,13 @@ CocoonText.prototype.prepareUpdateText = function (text,style)
         this.canvas._pixiId = this._pixiId;
 
         this.cacheDirty = true;
-
-        var texture = PIXI.Texture.fromCanvas(this.canvas);
-        texture.trim = new PIXI.math.Rectangle();
-        this.texture = texture;
-        this._texture = texture;
     }
+    var texture = PIXI.Texture.fromCanvas(this.canvas);
+    texture.trim = new PIXI.math.Rectangle();
+    this.texture = texture;
+    this._texture = texture;
 };
+
 /**
  * Renders text and updates it when needed
  *
@@ -463,7 +459,9 @@ CocoonText.prototype.updateTexture = function ()
     this.scale.y = 1;
 
     if (this.cacheDirty)
+    {
         texture.baseTexture.emit('update',  texture.baseTexture);
+    }
 
     this.dirty = false;
     this.cacheDirty = false;
