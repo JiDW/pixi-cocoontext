@@ -1,4 +1,3 @@
-var PIXI = require('pixi.js');
 var CONST = require('../CocoonTextUtil');
 
 /**
