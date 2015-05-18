@@ -105,6 +105,8 @@ function CocoonText(text, style, resolution)
 
     this.text = text;
     this.style = style;
+
+    this.switchNeeded = false;
 }
 
 // constructor
@@ -162,24 +164,24 @@ Object.defineProperties(CocoonText.prototype, {
     /**
      * Set the style of the text
      *
-     * @param [style] {object} The style parameters
-     * @param [style.font='bold 20pt Arial'] {string} The style and size of the font
-     * @param [style.fill='black'] {object} A canvas fillstyle that will be used on the text eg 'red', '#00FF00'
-     * @param [style.align='left'] {string} Alignment for multiline text ('left', 'center' or 'right'), does not affect single line text
-     * @param [style.stroke='black'] {string} A canvas fillstyle that will be used on the text stroke eg 'blue', '#FCFF00'
-     * @param [style.strokeThickness=0] {number} A number that represents the thickness of the stroke. Default is 0 (no stroke)
-     * @param [style.wordWrap=false] {boolean} Indicates if word wrap should be used
-     * @param [style.wordWrapWidth=100] {number} The width at which text will wrap
-     * @param [style.lineHeight] {number} The line height, a number that represents the vertical space that a letter uses
-     * @param [style.dropShadow=false] {boolean} Set a drop shadow for the text
-     * @param [style.dropShadowColor='#000000'] {string} A fill style to be used on the dropshadow e.g 'red', '#00FF00'
-     * @param [style.dropShadowAngle=Math.PI/6] {number} Set a angle of the drop shadow
-     * @param [style.dropShadowDistance=5] {number} Set a distance of the drop shadow
-     * @param [style.padding=0] {number} Occasionally some fonts are cropped. Adding some padding will prevent this from happening
-     * @param [style.textBaseline='alphabetic'] {string} The baseline of the text that is rendered.
-     * @param [style.lineJoin='miter'] {string} The lineJoin property sets the type of corner created, it can resolve
+     * @param [value] {object} The style parameters
+     * @param [value.font='bold 20pt Arial'] {string} The style and size of the font
+     * @param [value.fill='black'] {object} A canvas fillstyle that will be used on the text eg 'red', '#00FF00'
+     * @param [value.align='left'] {string} Alignment for multiline text ('left', 'center' or 'right'), does not affect single line text
+     * @param [value.stroke='black'] {string} A canvas fillstyle that will be used on the text stroke eg 'blue', '#FCFF00'
+     * @param [value.strokeThickness=0] {number} A number that represents the thickness of the stroke. Default is 0 (no stroke)
+     * @param [value.wordWrap=false] {boolean} Indicates if word wrap should be used
+     * @param [value.wordWrapWidth=100] {number} The width at which text will wrap
+     * @param [value.lineHeight] {number} The line height, a number that represents the vertical space that a letter uses
+     * @param [value.dropShadow=false] {boolean} Set a drop shadow for the text
+     * @param [value.dropShadowColor='#000000'] {string} A fill style to be used on the dropshadow e.g 'red', '#00FF00'
+     * @param [value.dropShadowAngle=Math.PI/6] {number} Set a angle of the drop shadow
+     * @param [value.dropShadowDistance=5] {number} Set a distance of the drop shadow
+     * @param [value.padding=0] {number} Occasionally some fonts are cropped. Adding some padding will prevent this from happening
+     * @param [value.textBaseline='alphabetic'] {string} The baseline of the text that is rendered.
+     * @param [value.lineJoin='miter'] {string} The lineJoin property sets the type of corner created, it can resolve
      *      spiked text issues. Default is 'miter' (creates a sharp corner).
-     * @param [style.miterLimit=10] {number} The miter limit to use when using the 'miter' lineJoin mode. This can reduce
+     * @param [value.miterLimit=10] {number} The miter limit to use when using the 'miter' lineJoin mode. This can reduce
      *      or increase the spikiness of rendered text.
      * @memberof CocoonText#
      */
@@ -188,28 +190,28 @@ Object.defineProperties(CocoonText.prototype, {
         {
             return this._style;
         },
-        set: function (style)
+        set: function (value)
         {
-            style = style || {};
-            style.font = style.font || 'bold 20px Arial';
-            style.fill = style.fill || 'black';
-            style.align = style.align || 'left';
-            style.stroke = style.stroke || 'black'; //provide a default, see: https://github.com/GoodBoyDigital/pixi.js/issues/136
-            style.strokeThickness = style.strokeThickness || 0;
-            style.wordWrap = style.wordWrap || false;
-            style.wordWrapWidth = style.wordWrapWidth || 100;
+            var style = {};
+            style.font = value.font || 'bold 20px Arial';
+            style.fill = value.fill || 'black';
+            style.align = value.align || 'left';
+            style.stroke = value.stroke || 'black'; //provide a default, see: https://github.com/GoodBoyDigital/pixi.js/issues/136
+            style.strokeThickness = value.strokeThickness || 0;
+            style.wordWrap = value.wordWrap || false;
+            style.wordWrapWidth = value.wordWrapWidth || 100;
 
-            style.dropShadow = style.dropShadow || false;
-            style.dropShadowColor = style.dropShadowColor || '#000000';
-            style.dropShadowAngle = style.dropShadowAngle || Math.PI / 6;
-            style.dropShadowDistance = style.dropShadowDistance || 5;
+            style.dropShadow = value.dropShadow || false;
+            style.dropShadowColor = value.dropShadowColor || '#000000';
+            style.dropShadowAngle = value.dropShadowAngle || Math.PI / 6;
+            style.dropShadowDistance = value.dropShadowDistance || 5;
 
-            style.padding = style.padding || 0;
+            style.padding = value.padding || 0;
 
-            style.textBaseline = style.textBaseline || 'alphabetic';
+            style.textBaseline = value.textBaseline || 'alphabetic';
 
-            style.lineJoin = style.lineJoin || 'miter';
-            style.miterLimit = style.miterLimit || 10;
+            style.lineJoin = value.lineJoin || 'miter';
+            style.miterLimit = value.miterLimit || 10;
 
             //multiply the font style by the resolution
             //TODO : warn if font size not in px unit
@@ -233,7 +235,7 @@ Object.defineProperties(CocoonText.prototype, {
 
             if (this._style !== null)
             {
-                this.prepareUpdateText(this._text,style);
+                this.prepareUpdateText(this._text,value);
             }
 
             this._style = style;
@@ -267,6 +269,7 @@ Object.defineProperties(CocoonText.prototype, {
         }
     }
 });
+
 /**
  * Prepare the canvas for an update and try to get a cached text first.
  *
@@ -275,7 +278,16 @@ Object.defineProperties(CocoonText.prototype, {
 CocoonText.prototype.prepareUpdateText = function (text,style)
 {
     this._pixiId = text+JSON.stringify(style)+this.resolution;
+    this.switchNeeded = true;
+};
 
+/**
+ * Prepare the canvas for an update and try to get a cached text first.
+ *
+ * @private
+ */
+CocoonText.prototype.switchCanvas = function ()
+{
     var baseTexture = PIXI.utils.BaseTextureCache[this._pixiId];
     if (baseTexture)
     {
@@ -297,6 +309,7 @@ CocoonText.prototype.prepareUpdateText = function (text,style)
     texture.trim = new PIXI.math.Rectangle();
     this.texture = texture;
     this._texture = texture;
+    this.switchNeeded = false;
 };
 
 /**
@@ -306,6 +319,10 @@ CocoonText.prototype.prepareUpdateText = function (text,style)
  */
 CocoonText.prototype.updateText = function ()
 {
+    if (this.switchNeeded)
+    {
+        this.switchCanvas();
+    }
     if (this.cacheDirty)
     {
         var style = this._generatedStyle;
@@ -489,7 +506,8 @@ CocoonText.prototype.determineFontProperties = function (fontStyle)
         var baseline = Math.ceil(context.measureText('M').width);
         var height = 2 * baseline;
 
-        baseline = baseline * 1.4 | 0;
+        // baseline factor depends a lot of the font. todo : let user specify a factor per font name ?
+        baseline = baseline * 1.2 | 0;
 
         canvas.width = width;
         canvas.height = height;
