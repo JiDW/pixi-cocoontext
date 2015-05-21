@@ -363,7 +363,7 @@ CocoonText.prototype.updateText = function ()
             height += style.dropShadowDistance;
         }
 
-        this.canvas.height = ( height + this._style.padding * 2 );
+        this.canvas.height = ( height + style.padding * 2 );
 
         if (navigator.isCocoonJS)
         {
@@ -403,7 +403,7 @@ CocoonText.prototype.updateText = function ()
 
                 if (style.fill)
                 {
-                    this.context.fillText(lines[i], linePositionX + xShadowOffset, linePositionY + yShadowOffset + this._style.padding);
+                    this.context.fillText(lines[i], linePositionX + xShadowOffset, linePositionY + yShadowOffset + style.padding);
                 }
             }
         }
@@ -428,12 +428,12 @@ CocoonText.prototype.updateText = function ()
 
             if (style.stroke && style.strokeThickness)
             {
-                this.context.strokeText(lines[i], linePositionX, linePositionY + this._style.padding);
+                this.context.strokeText(lines[i], linePositionX, linePositionY + style.padding);
             }
 
             if (style.fill)
             {
-                this.context.fillText(lines[i], linePositionX, linePositionY + this._style.padding);
+                this.context.fillText(lines[i], linePositionX, linePositionY + style.padding);
             }
         }
     }
