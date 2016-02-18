@@ -100,7 +100,7 @@ function CocoonText(text, style, resolution)
     this.context = this.canvas.getContext('2d');
 
     var texture = PIXI.Texture.fromCanvas(this.canvas);
-    texture.trim = new PIXI.math.Rectangle();
+    texture.trim = new PIXI.Rectangle();
     PIXI.Sprite.call(this, texture);
 
     this.text = text;
@@ -306,7 +306,7 @@ CocoonText.prototype.switchCanvas = function ()
         this.cacheDirty = true;
     }
     var texture = PIXI.Texture.fromCanvas(this.canvas);
-    texture.trim = new PIXI.math.Rectangle();
+    texture.trim = new PIXI.Rectangle();
     this.texture = texture;
     this._texture = texture;
     this.switchNeeded = false;
